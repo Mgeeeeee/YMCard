@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YMCard</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: #f5f5f5;
+        color: #333;
+      }
+      main {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding: 24px;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+      @media (min-width: 960px) {
+        main {
+          flex-direction: row;
+        }
+      }
+      section {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      }
+      .controls {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .controls h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 16px;
+      }
+      input[type="text"],
+      textarea {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #dadce0;
+        padding: 12px 14px;
+        font-size: 16px;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 48px;
+        transition: border 0.2s ease, box-shadow 0.2s ease;
+      }
+      textarea {
+        min-height: 120px;
+      }
+      input[type="text"]:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+      }
+      .button-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      button {
+        border: none;
+        border-radius: 999px;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        background: linear-gradient(135deg, #4a90e2, #6ec1e4);
+        color: #fff;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px rgba(74, 144, 226, 0.3);
+      }
+      button:active {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+        transform: none;
+        box-shadow: none;
+      }
+      .preview {
+        flex: 0 0 540px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: auto;
+      }
+      .preview svg {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="controls">
+        <h1>故事卡片</h1>
+        <label>
+          标题
+          <input id="title-input" type="text" placeholder="请输入标题" value="🌟 缘起 🌟" />
+        </label>
+        <label>
+          正文
+          <textarea id="body-input" placeholder="请输入正文">起初，想在YouMind实现这个SVG故事卡片，不过还没有方法实现。
+
+于是尝试使用Ai写了这么一个网页来，一切都由Ai实现，自己只提供了想法和做微调。
+
+有很多瑕疵，它并不完美。
+
+有朝一日，这个故事卡片应该会在YouMind重生。这里，就当做一个暂时的中转站吧。
+
+玩得开心～
+@Mgeeeeee</textarea>
+        </label>
+        <label>
+          结尾
+          <textarea id="summary-input" placeholder="请输入结尾">Draw your mind in YouMind</textarea>
+        </label>
+        <div class="button-row">
+          <button id="download-btn" type="button">保存为 PNG 图片</button>
+        </div>
+      </section>
+      <section class="preview">
+        <svg id="note" xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+          <defs>
+            <style>
+              #note text {
+                fill: #333;
+                font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+                filter: url(#text-on-paper);
+              }
+              #note .title {
+                font-size: 70px;
+                font-weight: 700;
+                text-anchor: middle;
+              }
+              #note .body {
+                font-size: 55px;
+              }
+              #note .summary {
+                font-size: 55px;
+                font-style: italic;
+                text-anchor: middle;
+                fill: #444;
+              }
+            </style>
+            <clipPath id="frame">
+              <rect x="0" y="0" width="1080" height="1920" />
+            </clipPath>
+            <filter
+              id="paper-bg"
+              x="0"
+              y="0"
+              width="1080"
+              height="1920"
+              color-interpolation-filters="sRGB"
+            >
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.05"
+                numOctaves="4"
+                seed="3"
+                result="NOISE"
+              />
+              <feDiffuseLighting in="NOISE" lighting-color="white" surfaceScale="1.8" result="LIGHT">
+                <feDistantLight azimuth="45" elevation="60" />
+              </feDiffuseLighting>
+              <feFlood flood-color="#fff" result="BASE" />
+              <feBlend in="BASE" in2="LIGHT" mode="multiply" result="PAPER" />
+            </filter>
+            <filter
+              id="text-on-paper"
+              x="-6%"
+              y="-40%"
+              width="112%"
+              height="180%"
+              color-interpolation-filters="sRGB"
+            >
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.05"
+                numOctaves="4"
+                seed="3"
+                result="NOISE"
+              />
+              <feDiffuseLighting in="NOISE" lighting-color="white" surfaceScale="1.8" result="LIGHT" />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="0.4" result="SOFT" />
+              <feDisplacementMap
+                in="SOFT"
+                in2="NOISE"
+                xChannelSelector="R"
+                yChannelSelector="G"
+                scale="8"
+                result="WARP"
+              />
+              <feComponentTransfer in="LIGHT" result="LIGHT_TONE">
+                <feFuncR type="linear" slope="0.9" />
+                <feFuncG type="linear" slope="0.9" />
+                <feFuncB type="linear" slope="0.9" />
+              </feComponentTransfer>
+              <feBlend in="WARP" in2="LIGHT_TONE" mode="multiply" />
+            </filter>
+            <symbol id="leaf" viewBox="-40 -20 80 40">
+              <path
+                d="M-30,0 C-20,-15 20,-15 30,0 C20,15 -20,15 -30,0Z"
+                fill="#6b8f57"
+                fill-opacity="0.35"
+                stroke="#4f6d3f"
+                stroke-opacity="0.45"
+                stroke-width="2"
+              />
+              <path
+                d="M-28,0 C-10,-5 10,-5 28,0"
+                fill="none"
+                stroke="#4f6d3f"
+                stroke-opacity="0.45"
+                stroke-width="1.5"
+              />
+            </symbol>
+          </defs>
+          <rect x="0" y="0" width="1080" height="1920" filter="url(#paper-bg)" />
+          <g filter="url(#text-on-paper)">
+            <use opacity="0.5" href="#leaf" transform="translate(100,400) scale(1.00) rotate(10)" />
+            <use opacity="0.5" href="#leaf" transform="translate(100,500) scale(0.75) rotate(-22)" />
+            <use opacity="0.5" href="#leaf" transform="translate(400,100) scale(0.55) rotate(30)" />
+            <use href="#leaf" transform="translate(120,120) scale(0.1) rotate(20)" />
+            <use href="#leaf" transform="translate(800,100) scale(0.15) rotate(-25)" />
+          </g>
+          <g clip-path="url(#frame)" id="text-layer">
+            <text
+              id="svg-title"
+              class="title"
+              x="540"
+              y="320"
+              text-anchor="middle"
+              data-line-height="80"
+              data-max-width="840"
+            >
+              <tspan x="540" y="320">故事标题</tspan>
+            </text>
+            <text
+              id="svg-body"
+              class="body"
+              x="120"
+              y="520"
+              data-line-height="75"
+              data-max-width="840"
+            >
+              <tspan x="120" y="520">故事正文</tspan>
+            </text>
+            <text
+              id="svg-summary"
+              class="summary"
+              x="540"
+              y="1700"
+              text-anchor="middle"
+              data-line-height="80"
+              data-max-width="840"
+              data-vertical-align="bottom"
+            >
+              <tspan x="540" y="1700">故事结尾</tspan>
+            </text>
+          </g>
+          <g transform="translate(540,1830)" fill="#333" filter="url(#text-on-paper)">
+            <g transform="translate(-50,-28.5)">
+              <svg width="100" height="57" viewBox="0 0 24.4 14">
+                <path
+                  d="M1.88672 0C3.45875 0.000168653 4.7334 1.27461 4.7334 2.84668V9.7998C4.7334 10.8307 5.56966 11.667 6.60059 11.667C7.63124 11.6667 8.4668 10.8305 8.4668 9.7998V4.92285C8.46706 2.20399 10.6717 0 13.3906 0C16.1093 0.000341475 18.3132 2.2042 18.3135 4.92285V14H16.2607C15.23 14 14.3938 13.1645 14.3936 12.1338V4.71289C14.3933 3.39877 13.3278 2.33319 12.0137 2.33301C10.6994 2.33301 9.63403 3.39866 9.63379 4.71289V9.68359C9.63365 12.0673 7.701 13.9996 5.31738 14C2.93344 14 1.00014 12.0675 1 9.68359V0H1.88672ZM19.9004 2.33301C22.191 2.33321 24.0753 4.07095 24.3086 6.2998C24.3246 6.45314 24.333 6.60902 24.333 6.7666V14H22.6768C21.646 14 20.8098 13.1645 20.8096 12.1338V6.2998C20.8095 4.73481 20.0524 3.34138 18.9102 2.44434C18.9291 2.44001 18.9487 2.43572 18.9678 2.43164C19.2683 2.36734 19.5807 2.33301 19.9004 2.33301Z"
+                />
+              </svg>
+            </g>
+          </g>
+        </svg>
+      </section>
+    </main>
+    <script>
+      const bindings = [
+        { inputId: "title-input", targetId: "svg-title" },
+        { inputId: "body-input", targetId: "svg-body" },
+        { inputId: "summary-input", targetId: "svg-summary" },
+      ];
+
+      const applyMultilineText = (element, rawValue) => {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const baseX = element.getAttribute("x") || "0";
+        const baseY = Number(element.getAttribute("y") || 0);
+        const lineHeightAttr = element.dataset.lineHeight || "1.4em";
+        const requiresPixels = /^[\d.]+$/.test(lineHeightAttr);
+        const dyValue = requiresPixels ? `${lineHeightAttr}px` : lineHeightAttr;
+        const maxWidthAttr = element.dataset.maxWidth;
+        const maxWidth = maxWidthAttr ? Number(maxWidthAttr) : null;
+        const verticalAlign = element.dataset.verticalAlign || "top";
+
+        const parseLineHeight = (value) => {
+          if (!value) return null;
+          if (/^[\d.]+$/.test(value)) {
+            return Number(value);
+          }
+          const pxMatch = value.match(/^([\d.]+)px$/i);
+          return pxMatch ? Number(pxMatch[1]) : null;
+        };
+
+        const numericLineHeight = parseLineHeight(lineHeightAttr);
+
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
+        }
+
+        const measureText = (text) => {
+          const tester = document.createElementNS(svgNS, "tspan");
+          tester.setAttribute("x", baseX);
+          tester.setAttribute("y", String(baseY));
+          tester.textContent = text && text.length ? text : "\u00A0";
+          element.appendChild(tester);
+          const width = tester.getComputedTextLength();
+          element.removeChild(tester);
+          return width;
+        };
+
+        const wrapLine = (line) => {
+          if (!maxWidth || Number.isNaN(maxWidth) || maxWidth <= 0) {
+            return [line];
+          }
+          if (!line.length) {
+            return [""];
+          }
+          const segments = [];
+          let buffer = "";
+          let lastBreakIndex = -1;
+          for (let i = 0; i < line.length; i += 1) {
+            const char = line[i];
+            const candidate = buffer + char;
+            if (measureText(candidate) <= maxWidth) {
+              if (/\s/.test(char)) {
+                lastBreakIndex = candidate.length - 1;
+              }
+              buffer = candidate;
+              continue;
+            }
+            if (buffer.length) {
+              let toPush = buffer;
+              if (lastBreakIndex >= 0) {
+                toPush = buffer.slice(0, lastBreakIndex + 1).replace(/\s+$/u, "");
+                const remaining = buffer.slice(lastBreakIndex + 1);
+                segments.push(toPush.length ? toPush : "");
+                buffer = remaining.trimStart();
+                lastBreakIndex = -1;
+                i -= 1;
+                continue;
+              }
+              segments.push(toPush.replace(/\s+$/u, ""));
+              buffer = char;
+              lastBreakIndex = -1;
+              if (measureText(buffer) > maxWidth) {
+                segments.push(buffer);
+                buffer = "";
+              }
+            } else {
+              segments.push(char);
+              buffer = "";
+              lastBreakIndex = -1;
+            }
+          }
+          if (buffer.length) {
+            segments.push(buffer.replace(/\s+$/u, ""));
+          }
+          if (!segments.length) {
+            segments.push("");
+          }
+          return segments;
+        };
+
+        const safeValue = rawValue != null ? String(rawValue) : "";
+        const normalized = safeValue.replace(/\r\n?/g, "\n");
+        const manualLines = normalized.split("\n");
+        const linesToRender = [];
+
+        manualLines.forEach((line) => {
+          const segments = wrapLine(line);
+          if (!segments.length) {
+            linesToRender.push("");
+          } else {
+            segments.forEach((segment) => {
+              linesToRender.push(segment);
+            });
+          }
+        });
+
+        if (!linesToRender.length) {
+          linesToRender.push("");
+        }
+
+        let currentY = baseY;
+        if (verticalAlign === "bottom" && numericLineHeight != null) {
+          currentY = baseY - numericLineHeight * (linesToRender.length - 1);
+        }
+
+        linesToRender.forEach((segment, index) => {
+          const tspan = document.createElementNS(svgNS, "tspan");
+          tspan.setAttribute("x", baseX);
+          if (index === 0) {
+            tspan.setAttribute("y", String(currentY));
+          } else {
+            tspan.setAttribute("dy", dyValue);
+          }
+          tspan.textContent = segment.length ? segment : "\u00A0";
+          element.appendChild(tspan);
+        });
+      };
+
+      bindings.forEach(({ inputId, targetId }) => {
+        const source = document.getElementById(inputId);
+        const target = document.getElementById(targetId);
+        if (!source || !target) return;
+
+        const sync = () => {
+          applyMultilineText(target, source.value);
+        };
+
+        source.addEventListener("input", sync);
+        sync();
+      });
+
+      const noteSvg = document.getElementById("note");
+      const downloadBtn = document.getElementById("download-btn");
+
+      const serializeSvg = () => {
+        if (!noteSvg) {
+          throw new Error("找不到 SVG 元素");
+        }
+        const clone = noteSvg.cloneNode(true);
+        clone.removeAttribute("style");
+        clone.setAttribute("width", "1080");
+        clone.setAttribute("height", "1920");
+        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        clone.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+
+        const serializer = new XMLSerializer();
+        return serializer.serializeToString(clone);
+      };
+
+      const exportSvgAsPng = async () => {
+        const svgMarkup = serializeSvg();
+        const blob = new Blob([svgMarkup], {
+          type: "image/svg+xml;charset=utf-8",
+        });
+        const objectUrl = URL.createObjectURL(blob);
+        const image = new Image();
+        image.crossOrigin = "anonymous";
+
+        const imageLoaded = new Promise((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error("图片渲染失败"));
+        });
+
+        image.src = objectUrl;
+        try {
+          await imageLoaded;
+
+          const canvas = document.createElement("canvas");
+          canvas.width = 1080;
+          canvas.height = 1920;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            throw new Error("无法创建画布上下文");
+          }
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(image, 0, 0);
+
+          const pngDataUrl = canvas.toDataURL("image/png");
+          const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+          const link = document.createElement("a");
+          link.href = pngDataUrl;
+          link.download = `story-card-${timestamp}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } finally {
+          URL.revokeObjectURL(objectUrl);
+        }
+      };
+
+      if (downloadBtn) {
+        downloadBtn.addEventListener("click", async () => {
+          const originalText = downloadBtn.textContent;
+          downloadBtn.disabled = true;
+          downloadBtn.textContent = "生成中...";
+          try {
+            await exportSvgAsPng();
+          } catch (error) {
+            console.error(error);
+            window.alert(error instanceof Error ? error.message : "导出失败，请再试一次。");
+          } finally {
+            downloadBtn.disabled = false;
+            downloadBtn.textContent = originalText;
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
