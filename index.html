@@ -57,6 +57,14 @@
         margin: 0;
         font-size: 24px;
       }
+      .browser-tip {
+        margin: -8px 0 8px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        background: #fef3c7;
+        color: #92400e;
+        font-size: 14px;
+      }
       label {
         display: flex;
         flex-direction: column;
@@ -154,17 +162,12 @@
       .card-frame {
         position: relative;
         flex: 0 1 auto;
-        width: min(100%, 540px);
+        width: min(100%, var(--card-max-width, 540px));
         max-width: 1080px;
         border-radius: 24px;
         overflow: hidden;
         margin: 0 auto;
         aspect-ratio: 9 / 16;
-      }
-      @supports (width: clamp(1px, 2px, 3px)) {
-        .card-frame {
-          width: min(100%, clamp(360px, calc(90vh * 0.5625), 1080px));
-        }
       }
       .card-frame::before {
         content: "";
@@ -193,10 +196,10 @@
           align-items: center;
         }
         .card-frame {
-          width: min(100%, 420px);
           margin: 0 auto;
           aspect-ratio: 9 / 16;
           max-height: none;
+          --card-max-width: 420px;
         }
         .card-frame::before {
           padding-top: 177.7778%;
@@ -208,6 +211,7 @@
     <main>
       <section class="controls">
         <h1>故事卡片</h1>
+        <p class="browser-tip">请使用谷歌浏览器打开</p>
         <label>
           标题
           <input id="title-input" type="text" placeholder="请输入标题" value="🌟 缘起 🌟" />
@@ -257,6 +261,9 @@
                 font-style: italic;
                 text-anchor: middle;
                 fill: #444;
+              }
+              #note.no-filters text {
+                filter: none;
               }
             </style>
             <clipPath id="frame">
@@ -540,6 +547,38 @@
       const noteSvg = document.getElementById("note");
       const downloadBtn = document.getElementById("download-btn");
       const clearBtn = document.getElementById("clear-btn");
+      const cardFrame = document.querySelector(".card-frame");
+
+      const disableUnsupportedFilters = () => {
+        if (!noteSvg) return;
+        if (typeof window.SVGFETurbulenceElement === "undefined") {
+          noteSvg.classList.add("no-filters");
+          const filteredElements = noteSvg.querySelectorAll("[filter]");
+          filteredElements.forEach((element) => {
+            element.removeAttribute("filter");
+          });
+        }
+      };
+
+      const updateCardFrameSize = () => {
+        if (!cardFrame) return;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 960;
+        const containerWidth = cardFrame.parentElement
+          ? cardFrame.parentElement.clientWidth
+          : cardFrame.clientWidth || 540;
+        const idealWidthFromHeight = viewportHeight * 0.9 * (9 / 16);
+        const boundedWidth = Math.min(Math.max(idealWidthFromHeight, 280), 1080);
+        const finalWidth = Math.max(240, Math.min(containerWidth, boundedWidth));
+        cardFrame.style.setProperty("--card-max-width", `${finalWidth}px`);
+        cardFrame.style.width = `${finalWidth}px`;
+        cardFrame.style.height = `${(finalWidth * 16) / 9}px`;
+      };
+
+      disableUnsupportedFilters();
+      updateCardFrameSize();
+      window.addEventListener("resize", updateCardFrameSize);
+      window.addEventListener("orientationchange", updateCardFrameSize);
+      window.addEventListener("load", updateCardFrameSize);
 
       const serializeSvg = () => {
         if (!noteSvg) {
